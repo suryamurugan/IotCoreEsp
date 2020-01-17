@@ -43,7 +43,7 @@ const static int CONNECTED_BIT = BIT0;
 #define SUBSCRIBE_TOPIC_CONFIG "/devices/%s/config"
 #define PUBLISH_TOPIC_EVENT "/devices/%s/events"
 #define PUBLISH_TOPIC_STATE "/devices/%s/state"
-#define TEMPERATURE_DATA "{temp : %d}"
+#define TEMPERATURE_DATA "{temp : %.1f}"
 #define MIN_TEMP 20
 #define OUTPUT_GPIO CONFIG_OUTPUT_GPIO
 
@@ -99,7 +99,21 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
     char *publish_topic = NULL;
     asprintf(&publish_topic, PUBLISH_TOPIC_EVENT, CONFIG_GIOT_DEVICE_ID);
     char *publish_message = NULL;
-    asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
+    //asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
+    //asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
+
+// DHT 
+    printf( "Starting DHT Task\n\n");
+    printf("=== Reading DHT ===\n" );
+	int ret = readDHT();
+	errorHandler(ret);
+    printf( "Hum %.1f\n", getHumidity() );
+	//printf( "Tmp %.1f\n", getTemperature() );
+    asprintf(&publish_message, TEMPERATURE_DATA, getTemperature());
+
+
+//
+
     ESP_LOGI(TAG, "publishing msg \"%s\" to topic: \"%s\"\n", publish_message, publish_topic);
 
     iotc_publish(context_handle, publish_topic, publish_message,
@@ -273,6 +287,9 @@ static void wifi_init(void)
 static void mqtt_task(void *pvParameters)
 {
 
+
+	setDHTgpio( 4 );
+    
         ESP_LOGI(TAG, "MQTT TASK HERE");
 
     /* Format the key type descriptors so the client understands
