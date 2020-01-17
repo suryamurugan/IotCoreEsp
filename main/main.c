@@ -44,7 +44,8 @@ time_t now = 0;
 #define SUBSCRIBE_TOPIC_CONFIG "/devices/%s/config"
 #define PUBLISH_TOPIC_EVENT "/devices/%s/events"
 #define PUBLISH_TOPIC_STATE "/devices/%s/state"
-#define TEMPERATURE_DATA "{\"temp\" : %.1f , \"timestamp\": %ld }"
+//#define TEMPERATURE_DATA "{\"temp\" : %.1f , \"timestamp\": %ld }"
+#define TEMPERATURE_DATA "{\"temp\" : 12 , \"timestamp\": \"2018-02-04T20:45:31.866Z\" }"
 #define MIN_TEMP 20
 #define OUTPUT_GPIO CONFIG_OUTPUT_GPIO
 
@@ -111,7 +112,8 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
 	errorHandler(ret);
     printf( "Hum %.1f\n", getHumidity() );
 	//printf( "Tmp %.1f\n", getTemperature() );
-    asprintf(&publish_message, TEMPERATURE_DATA, getTemperature(),now);
+//asprintf(&publish_message, TEMPERATURE_DATA, getTemperature(),now);
+asprintf(&publish_message, TEMPERATURE_DATA);
 
 
 //
