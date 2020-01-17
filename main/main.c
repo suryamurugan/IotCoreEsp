@@ -35,6 +35,7 @@ static const char *TAG = "APP";
 
 static EventGroupHandle_t wifi_event_group;
 const static int CONNECTED_BIT = BIT0;
+time_t now = 0;
 
 #define IOTC_UNUSED(x) (void)(x)
 
@@ -43,7 +44,7 @@ const static int CONNECTED_BIT = BIT0;
 #define SUBSCRIBE_TOPIC_CONFIG "/devices/%s/config"
 #define PUBLISH_TOPIC_EVENT "/devices/%s/events"
 #define PUBLISH_TOPIC_STATE "/devices/%s/state"
-#define TEMPERATURE_DATA "{temp : %.1f}"
+#define TEMPERATURE_DATA "{\"temp\" : %.1f , \"timestamp\": %ld }"
 #define MIN_TEMP 20
 #define OUTPUT_GPIO CONFIG_OUTPUT_GPIO
 
@@ -79,7 +80,7 @@ static void obtain_time(void)
 {
     initialize_sntp();
     // wait for time to be set
-    time_t now = 0;
+    //time_t now = 0;
     struct tm timeinfo = {0};
     while (timeinfo.tm_year < (2016 - 1900)) {
         ESP_LOGI(TAG, "Waiting for system time to be set...");
@@ -101,7 +102,8 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
     char *publish_message = NULL;
     //asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
     //asprintf(&publish_message, TEMPERATURE_DATA, MIN_TEMP + rand() % 10);
-
+    time(&now);
+    printf("NOW : %ld",now);
 // DHT 
     printf( "Starting DHT Task\n\n");
     printf("=== Reading DHT ===\n" );
@@ -109,10 +111,13 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
 	errorHandler(ret);
     printf( "Hum %.1f\n", getHumidity() );
 	//printf( "Tmp %.1f\n", getTemperature() );
-    asprintf(&publish_message, TEMPERATURE_DATA, getTemperature());
+    asprintf(&publish_message, TEMPERATURE_DATA, getTemperature(),now);
 
 
 //
+
+    ESP_LOGI(TAG,"TIME IS : %ld",now);
+
 
     ESP_LOGI(TAG, "publishing msg \"%s\" to topic: \"%s\"\n", publish_message, publish_topic);
 
@@ -121,6 +126,8 @@ void publish_telemetry_event(iotc_context_handle_t context_handle,
                  /*callback=*/NULL, /*user_data=*/NULL);
     free(publish_topic);
     free(publish_message);
+    //free(now);
+   // obtain_time();
 }
 
 void iotc_mqttlogic_subscribe_callback(
